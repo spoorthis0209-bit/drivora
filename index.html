@@ -88,7 +88,7 @@
   <!-- HOME -->
   <div id="home">
     <div class="hero"><h1>Driver fitness check</h1>
-      <p>One camera-based assessment screens for alcohol, drug and fatigue impairment, then gives a verdict.</p></div>
+      <p>One camera-based check screens for alcohol, drug and fatigue impairment, then gives a verdict.</p></div>
     <div class="card">
       <div class="field"><span class="flabel">Name</span><input id="name" placeholder="Enter your name"></div>
       <div class="field"><span class="flabel">Email</span><input id="email" type="email" placeholder="you@example.com"></div>
@@ -219,7 +219,7 @@ function reactionPhase(findings){
 
 // ---- PHASE 3: combined result ----
 function finish(f){
-  setStep(3); show(resultbox); stopCam(); backBtn.textContent="New assessment";
+  setStep(3); show(resultbox); stopCam(); backBtn.textContent="New check";
   const drugBad=!!f.drug, drowsyBad=!!f.drowsy, reacBad=f.reaction && f.reaction.level!=="none / mild";
   const anyBad=drugBad||drowsyBad||reacBad;
   const line=(k,sub,bad,tag)=>`<div class="find"><div class="fi" style="border-color:${bad?'rgba(239,68,68,.4)':'rgba(34,197,94,.35)'}">
@@ -234,18 +234,18 @@ function finish(f){
   if(reacBad) preds.push(`<b>slowed reaction time</b> consistent with alcohol or cognitive impairment`);
   if(drowsyBad) preds.push(`<b>signs of fatigue</b>`);
   const prediction = anyBad
-    ? `Assessment indicates ${preds.join(", and ")}. Driver is flagged <b>not fit to drive</b>.`
+    ? `The check indicates ${preds.join(", and ")}. Driver is flagged <b>not fit to drive</b>.`
     : `No impairment detected across pupil, reaction and fatigue checks. Driver appears <b>fit to drive</b>.`;
   resultbox.innerHTML=`
     <div class="badge ${anyBad?'bad':'ok'}">${anyBad?cross('#ef4444',28):check('#22c55e',30)}</div>
     <div class="verdict ${anyBad?'bad':'ok'}">${anyBad?'NOT FIT TO DRIVE':'FIT TO DRIVE'}</div>
-    <div class="vsub">Assessment for ${person.name}</div>
+    <div class="vsub">Result for ${person.name}</div>
     ${line('Alcohol / reaction', reacSub, reacBad, reacBad?'Impaired':'Clear')}
     ${line('Drugs', drugSub, drugBad, drugBad?'Flagged':'Clear')}
     ${line('Fatigue', drowSub, drowsyBad, drowsyBad?'Drowsy':'Clear')}
     <div class="pred"><b>Prediction.</b> ${prediction}</div>
-    <div class="note">Local browser assessment · ${new Date().toLocaleString()}</div>`;
-  say(anyBad?"Assessment complete. You are not fit to drive.":"Assessment complete. You are fit to drive.");
+    <div class="note">Local browser check · ${new Date().toLocaleString()}</div>`;
+  say(anyBad?"Check complete. You are not fit to drive.":"Check complete. You are fit to drive.");
 }
 function check(c,s){return `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none"><path d="M5 12.5l4.5 4.5L19 7.5" stroke="${c}" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`;}
 function cross(c,s){return `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none"><path d="M7 7l10 10M17 7L7 17" stroke="${c}" stroke-width="2.4" stroke-linecap="round"/></svg>`;}
