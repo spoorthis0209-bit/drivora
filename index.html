@@ -1,1 +1,306 @@
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Drivora — AI Driver Fitness Check</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#070b12;--panel:#0f1620;--panel2:#0b1018;--border:#1c2633;--hair:#141c27;
+        --text:#eaeff6;--muted:#8a97a8;--faint:#5a6676;--brand:#3b82f6;--brand2:#2dd4bf;
+        --ok:#22c55e;--bad:#ef4444;--warn:#f59e0b}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Inter',-apple-system,Helvetica,Arial,sans-serif;color:var(--text);min-height:100vh;
+       background:radial-gradient(760px 420px at 14% -10%,rgba(45,212,191,.10),transparent 60%),
+        radial-gradient(820px 480px at 92% 110%,rgba(59,130,246,.14),transparent 60%),
+        linear-gradient(165deg,#0c1422 0%,#080d16 60%,#05080e 100%);
+       display:flex;align-items:center;justify-content:center;padding:28px;position:relative}
+  body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+       background-image:linear-gradient(rgba(255,255,255,.028) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.028) 1px,transparent 1px);
+       background-size:44px 44px;-webkit-mask-image:radial-gradient(circle at 50% 34%,#000,transparent 72%);mask-image:radial-gradient(circle at 50% 34%,#000,transparent 72%)}
+  .app{width:100%;max-width:480px;position:relative;z-index:1}
+  .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px}
+  .brand{display:flex;align-items:center;gap:11px}
+  .brand svg{width:30px;height:30px} .brand .nm{font-size:19px;font-weight:800;letter-spacing:-.4px}
+  .status{display:flex;align-items:center;gap:7px;font-size:11px;color:var(--muted);font-weight:500}
+  .status .d{width:7px;height:7px;border-radius:50%;background:var(--ok);box-shadow:0 0 8px rgba(34,197,94,.7)}
+  .hero{margin-bottom:20px}
+  .hero h1{font-size:24px;font-weight:800;letter-spacing:-.6px}
+  .hero p{color:var(--muted);font-size:13.5px;margin-top:7px;line-height:1.55}
+  .card{background:linear-gradient(180deg,rgba(255,255,255,.015),transparent),var(--panel);
+        border:1px solid var(--border);border-radius:18px;padding:22px;box-shadow:0 24px 64px rgba(0,0,0,.5)}
+  .hid{display:none!important}
+  .flabel{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;font-weight:600;margin-bottom:7px;display:block}
+  .field{margin-bottom:14px}
+  .field input{width:100%;padding:12px 14px;border:1px solid var(--border);border-radius:11px;background:var(--panel2);color:var(--text);font:inherit;font-size:14px;outline:none;transition:.15s}
+  .field input:focus{border-color:var(--brand);box-shadow:0 0 0 3px rgba(59,130,246,.16)}
+  .chips{display:flex;gap:7px;flex-wrap:wrap;margin:4px 0 2px}
+  .chip{font-size:11px;color:var(--muted);background:var(--panel2);border:1px solid var(--border);padding:6px 11px;border-radius:7px;font-weight:500}
+  .btn{display:block;width:100%;margin-top:18px;padding:14px;border:0;border-radius:12px;font:inherit;font-weight:700;font-size:15px;color:#fff;background:var(--brand);cursor:pointer;transition:.15s}
+  .btn:hover{background:#2f6fe0}
+  .btn.ghost{background:transparent;border:1px solid var(--border);color:var(--text)}
+  .btn.ghost:hover{background:var(--panel2)}
+  .trust{display:flex;align-items:center;justify-content:center;gap:7px;color:var(--faint);font-size:11px;margin-top:16px}
+  .trust svg{width:13px;height:13px}
+  .videowrap{position:relative;border-radius:14px;overflow:hidden;background:#000;aspect-ratio:4/3;border:1px solid var(--border)}
+  video{width:100%;height:100%;object-fit:cover;display:block;transform:scaleX(-1)}
+  .bar{position:absolute;top:0;left:0;right:0;padding:11px 15px;font-weight:700;font-size:13.5px;color:#fff;background:linear-gradient(180deg,rgba(7,11,18,.85),rgba(7,11,18,.4));backdrop-filter:blur(4px);display:flex;align-items:center;gap:9px}
+  .bar::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--warn);box-shadow:0 0 8px var(--warn);animation:bl 1.2s infinite}
+  @keyframes bl{50%{opacity:.35}}
+  .read{position:absolute;bottom:0;left:0;right:0;padding:10px 15px;font-size:12px;color:#cdd6e3;background:linear-gradient(0deg,rgba(7,11,18,.85),rgba(7,11,18,.3));backdrop-filter:blur(4px);font-variant-numeric:tabular-nums}
+  .steps{display:flex;gap:6px;margin:14px 0 2px}
+  .pstep{flex:1;text-align:center;font-size:10.5px;color:var(--faint);padding:8px 4px;border:1px solid var(--border);border-radius:9px}
+  .pstep.on{color:var(--brand2);border-color:rgba(45,212,191,.4);background:rgba(45,212,191,.06)}
+  .pstep.done{color:var(--ok);border-color:rgba(34,197,94,.35)}
+  .grid{display:grid;gap:10px;margin:8px auto;justify-content:center}
+  .tile{width:80px;height:80px;border-radius:12px;background:#141d29;border:1px solid var(--border);cursor:pointer;transition:.08s}
+  .tile.lit{background:var(--warn);border-color:var(--warn);box-shadow:0 0 18px rgba(245,158,11,.4)}
+  .tile.sel{background:var(--brand2);border-color:var(--brand2)}
+  .gmsg{text-align:center;font-size:15px;font-weight:700;margin:6px 0}
+  .gsub{text-align:center;font-size:12px;color:var(--muted);margin-bottom:8px}
+  .big{text-align:center;font-size:62px;font-weight:800;letter-spacing:4px;margin:16px 0;color:var(--brand2)}
+  .pad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;max-width:220px;margin:10px auto}
+  .key{padding:15px 0;text-align:center;font-size:19px;font-weight:700;background:#141d29;border:1px solid var(--border);border-radius:10px;cursor:pointer}
+  .key:hover{border-color:var(--brand)}
+  .dot{width:58px;height:58px;border-radius:50%;background:var(--ok);margin:8px auto;cursor:pointer;box-shadow:0 0 26px rgba(34,197,94,.55)}
+  .badge{width:62px;height:62px;border-radius:50%;margin:2px auto 14px;display:flex;align-items:center;justify-content:center}
+  .badge.ok{background:rgba(34,197,94,.13);border:1px solid rgba(34,197,94,.45)}
+  .badge.bad{background:rgba(239,68,68,.13);border:1px solid rgba(239,68,68,.45)}
+  .verdict{text-align:center;font-size:21px;font-weight:800}
+  .verdict.ok{color:var(--ok)}.verdict.bad{color:var(--bad)}
+  .vsub{text-align:center;color:var(--muted);font-size:12.5px;margin:4px 0 14px;line-height:1.5}
+  .find{display:flex;align-items:center;gap:12px;padding:12px 2px;border-bottom:1px solid var(--hair)}
+  .find .fi{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex:none;border:1px solid var(--border)}
+  .find .fk{font-size:13px;font-weight:700} .find .fv{font-size:11.5px;color:var(--muted);margin-top:1px}
+  .find .tagv{margin-left:auto;font-size:11px;font-weight:700;padding:4px 9px;border-radius:6px}
+  .tagv.ok{color:var(--ok);background:rgba(34,197,94,.12)} .tagv.bad{color:var(--bad);background:rgba(239,68,68,.12)}
+  .pred{background:var(--panel2);border:1px solid var(--border);border-radius:12px;padding:13px 15px;margin-top:14px;font-size:12.5px;color:#cdd6e3;line-height:1.55}
+  .pred b{color:var(--text)}
+  .note{text-align:center;color:var(--faint);font-size:11px;margin-top:14px;line-height:1.5}
+</style></head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <div class="brand">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M12 2.5l7 2.6v5.2c0 4.3-2.9 8.3-7 9.7-4.1-1.4-7-5.4-7-9.7V5.1l7-2.6z" fill="rgba(59,130,246,.14)" stroke="#3b82f6" stroke-width="1.5" stroke-linejoin="round"/><path d="M9 12l2.2 2.2L15.5 10" stroke="#2dd4bf" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span class="nm">Drivora</span>
+    </div>
+    <div class="status"><span class="d"></span>System ready</div>
+  </div>
 
+  <!-- HOME -->
+  <div id="home">
+    <div class="hero"><h1>Driver fitness check</h1>
+      <p>One camera-based check screens for alcohol, drug and fatigue impairment, then gives a verdict.</p></div>
+    <div class="card">
+      <div class="field"><span class="flabel">Name</span><input id="name" placeholder="Enter your name"></div>
+      <div class="field"><span class="flabel">Email</span><input id="email" type="email" placeholder="you@example.com"></div>
+      <div class="chips"><span class="chip">Alcohol</span><span class="chip">Drug category</span><span class="chip">Fatigue</span></div>
+      <button id="startBtn" class="btn">Start</button>
+      <div class="trust">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
+        Processed entirely on your device — no video is uploaded.
+      </div>
+    </div>
+  </div>
+
+  <!-- STAGE -->
+  <div id="stage" class="card hid">
+    <div id="cambox" class="videowrap hid">
+      <video id="video" autoplay playsinline muted></video>
+      <canvas id="work" class="hid"></canvas>
+      <div id="bar" class="bar">Starting…</div>
+      <div id="read" class="read"></div>
+    </div>
+    <div id="stepsbox" class="steps hid">
+      <div class="pstep" id="s1">1 · Pupils &amp; eyes</div>
+      <div class="pstep" id="s2">2 · Reaction</div>
+      <div class="pstep" id="s3">3 · Result</div>
+    </div>
+    <div id="gamebox" class="hid"></div>
+    <div id="resultbox" class="hid"></div>
+    <button id="backBtn" class="btn ghost">Cancel</button>
+  </div>
+</div>
+
+<script type="module">
+import { FaceLandmarker, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14";
+const $=s=>document.querySelector(s);
+const home=$("#home"),stage=$("#stage"),cambox=$("#cambox"),gamebox=$("#gamebox"),resultbox=$("#resultbox"),
+      stepsbox=$("#stepsbox"),video=$("#video"),work=$("#work"),bar=$("#bar"),read=$("#read"),backBtn=$("#backBtn");
+let landmarker=null,stream=null,raf=null,running=false,person={name:"",email:""};
+
+const L_IRIS=[469,470,471,472],R_IRIS=[474,475,476,477],L_IC=468,R_IC=473;
+const L_EYE=[33,160,158,133,153,144],R_EYE=[362,385,387,263,373,380],MOUTH=[61,291,39,181,0,17];
+const dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
+const ear=(l,i)=>{const p=i.map(x=>l[x]);return (dist(p[1],p[5])+dist(p[2],p[4]))/(2*dist(p[0],p[3])+1e-6);};
+const mar=(l,i)=>{const p=i.map(x=>l[x]);return dist(p[4],p[5])/(dist(p[0],p[1])+1e-6);};
+const irisD=(l,c,r)=>r.reduce((s,i)=>s+dist(l[i],l[c]),0)/r.length*2;
+const CATS={dilated:{label:"Stimulant-type",possible:"methamphetamine, cocaine, MDMA, LSD"},
+            constricted:{label:"Opioid-type",possible:"heroin, morphine, fentanyl, codeine"}};
+
+async function ensureModel(){ if(landmarker)return;
+  bar.textContent="Loading AI model…";
+  const fs=await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm");
+  landmarker=await FaceLandmarker.createFromOptions(fs,{baseOptions:{modelAssetPath:"https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task"},runningMode:"VIDEO",numFaces:1,outputFaceBlendshapes:false});
+}
+async function startCam(){ stream=await navigator.mediaDevices.getUserMedia({video:{width:640,height:480,facingMode:"user"},audio:false}); video.srcObject=stream; await video.play(); }
+function stopCam(){ if(raf)cancelAnimationFrame(raf); running=false; if(stream){stream.getTracks().forEach(t=>t.stop());stream=null;} }
+function say(t){ try{speechSynthesis.speak(new SpeechSynthesisUtterance(t));}catch(e){} }
+function show(el){[cambox,gamebox,resultbox].forEach(x=>x.classList.add("hid")); el.classList.remove("hid");}
+function setStep(n){ ["s1","s2","s3"].forEach((id,i)=>{const e=$("#"+id);e.classList.remove("on","done"); if(i<n-1)e.classList.add("done"); else if(i===n-1)e.classList.add("on");}); }
+function toHome(){ stopCam(); stage.classList.add("hid"); home.classList.remove("hid"); gamebox.innerHTML=""; resultbox.innerHTML=""; stepsbox.classList.add("hid"); }
+backBtn.onclick=toHome;
+
+$("#startBtn").onclick=async()=>{
+  const name=$("#name").value.trim(), email=$("#email").value.trim();
+  if(!name){alert("Please enter your name.");return;}
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){alert("Please enter a valid email.");return;}
+  person={name,email};
+  home.classList.add("hid"); stage.classList.remove("hid"); stepsbox.classList.remove("hid"); show(cambox); setStep(1);
+  backBtn.textContent="Cancel";
+  try{ await ensureModel(); await startCam(); }
+  catch(e){ bar.textContent="Camera blocked"; read.textContent="Allow camera access, then reload."; return; }
+  cameraPhase();
+};
+
+// ---- PHASE 1: camera measures pupils + eyes together ----
+function cameraPhase(){
+  running=true; const t0=performance.now(); let base=null; const calib=[],dil=[],con=[],eyeH=[]; let yawn=0; let lastTs=-1;
+  const findings={drug:null,drowsy:false};
+  const w=work; w.width=640; w.height=480; const ctx=w.getContext("2d",{willReadFrequently:true});
+  bar.textContent="Scanning your eyes — look at the camera";
+  const step=()=>{
+    if(!running)return;
+    const now=performance.now(); let ts=Math.max(Math.floor(now),lastTs+1); lastTs=ts;
+    const res=landmarker.detectForVideo(video,ts); const secs=(now-t0)/1000;
+    if(res.faceLandmarks&&res.faceLandmarks.length){
+      const l=res.faceLandmarks[0];
+      // eyes
+      const e=(ear(l,L_EYE)+ear(l,R_EYE))/2, m=mar(l,MOUTH);
+      eyeH.push(e<0.15?1:0); if(eyeH.length>60)eyeH.shift();
+      yawn=m>0.6?yawn+1:0;
+      const perclos=eyeH.reduce((a,b)=>a+b,0)/Math.max(eyeH.length,1);
+      if((eyeH.length>=50&&perclos>0.5)||yawn>=18) findings.drowsy=true;
+      // pupils
+      ctx.save();ctx.scale(-1,1);ctx.drawImage(video,-w.width,0,w.width,w.height);ctx.restore();
+      const ratio=pupilRatio(ctx,l,L_IC,L_IRIS,w)??pupilRatio(ctx,l,R_IC,R_IRIS,w);
+      if(ratio){
+        if(base===null){ calib.push(ratio);
+          read.textContent=`calibrating ${Math.min(secs,3).toFixed(0)}/3s · hold still`;
+          if(secs>3&&calib.length>8){calib.sort((a,b)=>a-b);base=calib[Math.floor(calib.length/2)];}
+        } else {
+          dil.push(ratio>base*1.7?1:0); con.push(ratio<base*0.45?1:0); if(dil.length>30){dil.shift();con.shift();}
+          const dfrac=dil.reduce((a,b)=>a+b,0)/dil.length, cfrac=con.reduce((a,b)=>a+b,0)/con.length;
+          if(dil.length>=30){ if(dfrac>0.85)findings.drug="dilated"; else if(cfrac>0.85)findings.drug="constricted"; }
+          read.textContent=`scanning pupils · ${Math.max(0,(10-secs)).toFixed(0)}s left`;
+        }
+      } else if(base!==null){ read.textContent=`scanning · ${Math.max(0,(10-secs)).toFixed(0)}s left`; }
+    } else { read.textContent="no face — center your face in the frame"; }
+    if(secs>10){ running=false; stopCam(); return scanReport(findings); }
+    raf=requestAnimationFrame(step);
+  };
+  raf=requestAnimationFrame(step);
+}
+function pupilRatio(ctx,l,ci,ring,w){
+  const c=l[ci], cx=c.x*w.width, cy=c.y*w.height;
+  const r=Math.max(6, irisD(l,ci,ring)*w.width/2*1.1);
+  const x0=Math.max(0,Math.floor(cx-r)), y0=Math.max(0,Math.floor(cy-r)), s=Math.floor(r*2);
+  if(s<6)return null; let img; try{img=ctx.getImageData(x0,y0,s,s).data;}catch(e){return null;}
+  let sum=0,vals=new Float32Array(img.length/4);
+  for(let i=0,j=0;i<img.length;i+=4,j++){const v=0.299*img[i]+0.587*img[i+1]+0.114*img[i+2];vals[j]=v;sum+=v;}
+  const mean=sum/vals.length, thr=mean*0.6; let dark=0; for(const v of vals) if(v<thr)dark++;
+  const pr=Math.sqrt(dark/Math.PI), ratio=pr/r;
+  return (ratio>0.08&&ratio<0.9)?ratio:null;
+}
+
+// ---- scan report: tell the result, then branch ----
+function rowLine(k,sub,bad){return `<div class="find"><div class="fi" style="border-color:${bad?'rgba(239,68,68,.4)':'rgba(34,197,94,.35)'}">${bad?cross('#ef4444',16):check('#22c55e',16)}</div><div><div class="fk">${k}</div><div class="fv">${sub}</div></div><div class="tagv ${bad?'bad':'ok'}">${bad?'Flagged':'Clear'}</div></div>`;}
+function scanReport(f){
+  setStep(2); show(resultbox); backBtn.textContent="New check";
+  const drug=!!f.drug, drowsy=!!f.drowsy;
+  const rows = rowLine('Drugs', drug? (CATS[f.drug].label+' signs in pupils') : 'No drug signs', drug)
+             + rowLine('Fatigue', drowsy? 'Drowsiness detected' : 'Alert', drowsy);
+  if(drowsy && !drug){
+    resultbox.innerHTML=`
+      <div class="badge bad">${cross('#ef4444',28)}</div>
+      <div class="verdict bad">YOU APPEAR SLEEPY</div>
+      <div class="vsub">Result for ${person.name}</div>
+      ${rows}
+      <div class="pred"><b>Please rest.</b> Drowsiness detected — you are not fit to drive. Take a break before you drive.</div>
+      <div class="note">Local browser check &middot; ${new Date().toLocaleString()}</div>`;
+    say("You appear sleepy. Please rest before driving.");
+    return;
+  }
+  const scanMsg = drug
+    ? `${CATS[f.drug].label} drug signs detected in your pupils. Complete the quick game to confirm fitness.`
+    : `No drug or fatigue signs detected. Complete the quick game to check your alertness.`;
+  resultbox.innerHTML=`
+    <div class="badge ${drug?'bad':'ok'}">${drug?cross('#ef4444',28):check('#22c55e',30)}</div>
+    <div class="verdict ${drug?'bad':'ok'}">${drug?'SIGNS DETECTED':'SCAN CLEAR'}</div>
+    <div class="vsub">Result for ${person.name}</div>
+    ${rows}
+    <div class="pred">${scanMsg}</div>
+    <button id="toGame" class="btn">Start game</button>`;
+  document.getElementById("toGame").onclick=()=>reactionPhase(f);
+  say(drug? "Drug signs detected. Please complete the game." : "Scan clear. Please complete the game.");
+}
+
+// ---- PHASE 2: reaction (alcohol/cognitive) ----
+function reactionPhase(findings){
+  setStep(2); show(gamebox);
+  reactionGame("Reaction test",(level,detail)=>{ findings.reaction={level,detail}; finish(findings); });
+}
+
+// ---- PHASE 3: combined result ----
+function finish(f){
+  setStep(3); show(resultbox); stopCam(); backBtn.textContent="New check";
+  const drugBad=!!f.drug, drowsyBad=!!f.drowsy, reacBad=f.reaction && f.reaction.level!=="none / mild";
+  const anyBad=drugBad||drowsyBad||reacBad;
+  const line=(k,sub,bad,tag)=>`<div class="find"><div class="fi" style="border-color:${bad?'rgba(239,68,68,.4)':'rgba(34,197,94,.35)'}">
+      ${bad?cross('#ef4444',16):check('#22c55e',16)}</div>
+      <div><div class="fk">${k}</div><div class="fv">${sub}</div></div>
+      <div class="tagv ${bad?'bad':'ok'}">${tag}</div></div>`;
+  const drugSub = drugBad ? `${CATS[f.drug].label} — possible: ${CATS[f.drug].possible}` : "Pupils within normal range";
+  const reacSub = reacBad ? `Delayed response (${f.reaction.detail})` : `Normal response (${f.reaction?f.reaction.detail:'-'})`;
+  const drowSub = drowsyBad ? "Eye-closure / yawning detected" : "Alert — no fatigue signs";
+  let preds=[];
+  if(drugBad) preds.push(`pupil response consistent with <b>${CATS[f.drug].label.toLowerCase()}</b> drug influence`);
+  if(reacBad) preds.push(`<b>slowed reaction time</b> consistent with alcohol or cognitive impairment`);
+  if(drowsyBad) preds.push(`<b>signs of fatigue</b>`);
+  const prediction = anyBad
+    ? `The check indicates ${preds.join(", and ")}. Driver is flagged <b>not fit to drive</b>.`
+    : `No impairment detected across pupil, reaction and fatigue checks. Driver appears <b>fit to drive</b>.`;
+  resultbox.innerHTML=`
+    <div class="badge ${anyBad?'bad':'ok'}">${anyBad?cross('#ef4444',28):check('#22c55e',30)}</div>
+    <div class="verdict ${anyBad?'bad':'ok'}">${anyBad?'NOT FIT TO DRIVE':'FIT TO DRIVE'}</div>
+    <div class="vsub">Result for ${person.name}</div>
+    ${line('Alcohol / reaction', reacSub, reacBad, reacBad?'Impaired':'Clear')}
+    ${line('Drugs', drugSub, drugBad, drugBad?'Flagged':'Clear')}
+    ${line('Fatigue', drowSub, drowsyBad, drowsyBad?'Drowsy':'Clear')}
+    <div class="pred"><b>Prediction.</b> ${prediction}</div>
+    <div class="note">Local browser check · ${new Date().toLocaleString()}</div>`;
+  say(anyBad?"Check complete. You are not fit to drive.":"Check complete. You are fit to drive.");
+}
+function check(c,s){return `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none"><path d="M5 12.5l4.5 4.5L19 7.5" stroke="${c}" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`;}
+function cross(c,s){return `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none"><path d="M7 7l10 10M17 7L7 17" stroke="${c}" stroke-width="2.4" stroke-linecap="round"/></svg>`;}
+
+// ---- reaction game ----
+function reactionGame(title,done){
+  let round=0,hits=0,times=[];
+  const next=()=>{
+    if(round>=5){const avg=times.length?times.reduce((a,b)=>a+b,0)/times.length:9;
+      const ok=hits>=4&&avg<=1.0; done(ok?"none / mild":(hits>=3?"moderate":"severe"),`${hits}/5 hits, avg ${avg.toFixed(2)}s`); return;}
+    round++;
+    gamebox.innerHTML=`<div class="gmsg">${title}</div><div class="gsub">Round ${round}/5 — get ready…</div><div style="height:230px"></div>`;
+    setTimeout(()=>{
+      gamebox.innerHTML=`<div class="gmsg">${title}</div><div class="gsub">Round ${round}/5 — tap the circle!</div><div id="arena" style="position:relative;height:240px"></div>`;
+      const t=document.createElement("div");t.className="dot";
+      t.style.position="relative";t.style.top=(20+Math.random()*150)+"px";t.style.left=(10+Math.random()*340)+"px";
+      document.getElementById("arena").appendChild(t);
+      const s=performance.now();let ans=false;
+      t.onclick=()=>{ans=true;times.push((performance.now()-s)/1000);hits++;next();};
+      setTimeout(()=>{if(!ans)next();},1800);
+    },500+Math.random()*1100);
+  };
+  next();
+}
+</script>
+</body></html>
