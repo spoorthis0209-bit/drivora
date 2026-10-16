@@ -166,7 +166,7 @@ function cameraPhase(){
   running=true; const t0=performance.now(); let base=null; const calib=[],dil=[],con=[],eyeH=[]; let yawn=0; let lastTs=-1;
   const findings={drug:null,drowsy:false};
   const w=work; w.width=640; w.height=480; const ctx=w.getContext("2d",{willReadFrequently:true});
-  bar.textContent="Assessing — look at the camera";
+  bar.textContent="Scanning your eyes — look at the camera";
   const step=()=>{
     if(!running)return;
     const now=performance.now(); let ts=Math.max(Math.floor(now),lastTs+1); lastTs=ts;
@@ -190,11 +190,11 @@ function cameraPhase(){
           dil.push(ratio>base*1.25?1:0); con.push(ratio<base*0.75?1:0); if(dil.length>25){dil.shift();con.shift();}
           const dfrac=dil.reduce((a,b)=>a+b,0)/dil.length, cfrac=con.reduce((a,b)=>a+b,0)/con.length;
           if(dil.length>=25){ if(dfrac>0.6)findings.drug="dilated"; else if(cfrac>0.6)findings.drug="constricted"; }
-          read.textContent=`analysing pupils · ${(12-secs).toFixed(0)}s left`;
+          read.textContent=`scanning pupils · ${Math.max(0,(10-secs)).toFixed(0)}s left`;
         }
-      } else if(base!==null){ read.textContent=`analysing · ${(12-secs).toFixed(0)}s left`; }
+      } else if(base!==null){ read.textContent=`scanning · ${Math.max(0,(10-secs)).toFixed(0)}s left`; }
     } else { read.textContent="no face — center your face in the frame"; }
-    if(secs>12){ running=false; stopCam(); return reactionPhase(findings); }
+    if(secs>10){ running=false; stopCam(); return scanReport(findings); }
     raf=requestAnimationFrame(step);
   };
   raf=requestAnimationFrame(step);
@@ -209,6 +209,38 @@ function pupilRatio(ctx,l,ci,ring,w){
   const mean=sum/vals.length, thr=mean*0.6; let dark=0; for(const v of vals) if(v<thr)dark++;
   const pr=Math.sqrt(dark/Math.PI), ratio=pr/r;
   return (ratio>0.08&&ratio<0.9)?ratio:null;
+}
+
+// ---- scan report: tell the result, then branch ----
+function rowLine(k,sub,bad){return `<div class="find"><div class="fi" style="border-color:${bad?'rgba(239,68,68,.4)':'rgba(34,197,94,.35)'}">${bad?cross('#ef4444',16):check('#22c55e',16)}</div><div><div class="fk">${k}</div><div class="fv">${sub}</div></div><div class="tagv ${bad?'bad':'ok'}">${bad?'Flagged':'Clear'}</div></div>`;}
+function scanReport(f){
+  setStep(2); show(resultbox); backBtn.textContent="New check";
+  const drug=!!f.drug, drowsy=!!f.drowsy;
+  const rows = rowLine('Drugs', drug? (CATS[f.drug].label+' signs in pupils') : 'No drug signs', drug)
+             + rowLine('Fatigue', drowsy? 'Drowsiness detected' : 'Alert', drowsy);
+  if(drowsy && !drug){
+    resultbox.innerHTML=`
+      <div class="badge bad">${cross('#ef4444',28)}</div>
+      <div class="verdict bad">YOU APPEAR SLEEPY</div>
+      <div class="vsub">Result for ${person.name}</div>
+      ${rows}
+      <div class="pred"><b>Please rest.</b> Drowsiness detected — you are not fit to drive. Take a break before you drive.</div>
+      <div class="note">Local browser check &middot; ${new Date().toLocaleString()}</div>`;
+    say("You appear sleepy. Please rest before driving.");
+    return;
+  }
+  const scanMsg = drug
+    ? `${CATS[f.drug].label} drug signs detected in your pupils. Complete the quick game to confirm fitness.`
+    : `No drug or fatigue signs detected. Complete the quick game to check your alertness.`;
+  resultbox.innerHTML=`
+    <div class="badge ${drug?'bad':'ok'}">${drug?cross('#ef4444',28):check('#22c55e',30)}</div>
+    <div class="verdict ${drug?'bad':'ok'}">${drug?'SIGNS DETECTED':'SCAN CLEAR'}</div>
+    <div class="vsub">Result for ${person.name}</div>
+    ${rows}
+    <div class="pred">${scanMsg}</div>
+    <button id="toGame" class="btn">Start game</button>`;
+  document.getElementById("toGame").onclick=()=>reactionPhase(f);
+  say(drug? "Drug signs detected. Please complete the game." : "Scan clear. Please complete the game.");
 }
 
 // ---- PHASE 2: reaction (alcohol/cognitive) ----
