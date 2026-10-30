@@ -1,85 +1,107 @@
 <!doctype html><html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Drivora — AI Driver Fitness Check</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..600;1,9..144,400..500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-  :root{--bg:#0b1a3d;--panel:#112250;--panel2:#0e1c45;--border:#2b3b66;--hair:#1f2b50;
-        --text:#f5f4f0;--muted:#beb8a7;--faint:#8a8ba0;--brand:#3b507d;--brand2:#e7e2ce;
-        --ok:#22c55e;--bad:#ef4444;--warn:#c2a878}
   *{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:'Inter',-apple-system,Helvetica,Arial,sans-serif;color:var(--text);min-height:100vh;
-       background:radial-gradient(760px 420px at 14% -10%,rgba(231,226,206,.08),transparent 60%),
-        radial-gradient(820px 480px at 92% 110%,rgba(59,80,125,.32),transparent 60%),
-        linear-gradient(165deg,#0e1b3d 0%,#0a1430 60%,#070f24 100%);
-       display:flex;align-items:center;justify-content:center;padding:28px;position:relative}
-  body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
-       background-image:linear-gradient(rgba(255,255,255,.028) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.028) 1px,transparent 1px);
-       background-size:44px 44px;-webkit-mask-image:radial-gradient(circle at 50% 34%,#000,transparent 72%);mask-image:radial-gradient(circle at 50% 34%,#000,transparent 72%)}
-  .app{width:100%;max-width:480px;position:relative;z-index:1}
-  .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px}
-  .brand{display:flex;align-items:center;gap:11px}
-  .brand svg{width:30px;height:30px} .brand .nm{font-size:19px;font-weight:800;letter-spacing:-.4px}
-  .status{display:flex;align-items:center;gap:7px;font-size:11px;color:var(--muted);font-weight:500}
-  .status .d{width:7px;height:7px;border-radius:50%;background:var(--ok);box-shadow:0 0 8px rgba(34,197,94,.7)}
-  .hero{margin-bottom:20px}
-  .hero h1{font-size:24px;font-weight:800;letter-spacing:-.6px}
-  .hero p{color:var(--muted);font-size:13.5px;margin-top:7px;line-height:1.55}
-  .card{background:linear-gradient(180deg,rgba(255,255,255,.015),transparent),var(--panel);
-        border:1px solid var(--border);border-radius:18px;padding:22px;box-shadow:0 24px 64px rgba(0,0,0,.5)}
+  :root{
+    --midnight:#090F15;--mountain:#262E36;--apres:#6C6D74;--slopes:#B3B7BA;--arctic:#D3D1CE;
+    --bg:#090F15;--panel:#1a222c;--panel2:#121920;--inset:#0f161d;
+    --edge:rgba(211,209,206,.10);--edge2:rgba(211,209,206,.20);
+    --text:#DEDCD7;--muted:#B3B7BA;--faint:#787f87;
+    --ok:#74BE9C;--bad:#DD8585;--warn:#C9B88F;
+    --serif:'Fraunces',Georgia,'Times New Roman',serif;
+    --sans:'Inter',-apple-system,BlinkMacSystemFont,Helvetica,Arial,sans-serif;
+  }
+  html{-webkit-text-size-adjust:100%}
+  body{font-family:var(--sans);color:var(--text);min-height:100vh;line-height:1.5;-webkit-font-smoothing:antialiased;
+    background:radial-gradient(1000px 520px at 50% -18%,rgba(179,183,186,.09),transparent 62%),linear-gradient(180deg,#0c141c 0%,#090F15 48%);
+    background-attachment:fixed;display:flex;align-items:flex-start;justify-content:center;padding:34px 18px 64px}
+  @media (min-width:520px){body{align-items:center;padding:52px 18px}}
+  .app{width:100%;max-width:440px}
+  :focus-visible{outline:2px solid rgba(211,209,206,.55);outline-offset:2px}
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+  .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:32px}
+  .brand{display:flex;align-items:center;gap:10px}
+  .brand svg{width:25px;height:25px}
+  .brand .nm{font-family:var(--serif);font-style:italic;font-weight:500;font-size:22px;letter-spacing:.2px;color:var(--arctic)}
+  .status{display:flex;align-items:center;gap:7px;font-size:11.5px;color:var(--faint);font-weight:500}
+  .status .d{width:6px;height:6px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 3px rgba(116,190,156,.14)}
+
+  .hero{margin-bottom:22px}
+  .hero h1{font-family:var(--serif);font-weight:400;font-size:33px;line-height:1.08;letter-spacing:-.2px;color:var(--arctic)}
+  .hero p{color:var(--slopes);font-size:14px;margin-top:11px;line-height:1.6;max-width:37ch}
+
+  .card{background:linear-gradient(180deg,rgba(211,209,206,.035),transparent 140px),var(--panel);
+    border:1px solid var(--edge);border-radius:16px;padding:24px 22px;
+    box-shadow:0 1px 0 rgba(211,209,206,.04) inset,0 34px 64px -34px rgba(0,0,0,.85)}
   .hid{display:none!important}
-  .flabel{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;font-weight:600;margin-bottom:7px;display:block}
-  .field{margin-bottom:14px}
-  .field input{width:100%;padding:12px 14px;border:1px solid var(--border);border-radius:11px;background:var(--panel2);color:var(--text);font:inherit;font-size:14px;outline:none;transition:.15s}
-  .field input:focus{border-color:#5b73a8;box-shadow:0 0 0 3px rgba(59,80,125,.32)}
-  .chips{display:flex;gap:7px;flex-wrap:wrap;margin:4px 0 2px}
-  .chip{font-size:11px;color:var(--muted);background:var(--panel2);border:1px solid var(--border);padding:6px 11px;border-radius:7px;font-weight:500}
-  .btn{display:block;width:100%;margin-top:18px;padding:14px;border:0;border-radius:12px;font:inherit;font-weight:700;font-size:15px;color:#fff;background:var(--brand);cursor:pointer;transition:.15s}
-  .btn:hover{background:#48608f}
-  .btn.ghost{background:transparent;border:1px solid var(--border);color:var(--text)}
-  .btn.ghost:hover{background:var(--panel2)}
-  .trust{display:flex;align-items:center;justify-content:center;gap:7px;color:var(--faint);font-size:11px;margin-top:16px}
+
+  .field{margin-bottom:16px}
+  .flabel{display:block;font-size:12.5px;color:var(--muted);margin-bottom:8px;font-weight:500}
+  .field input{width:100%;padding:13px 14px;border:1px solid var(--edge);border-radius:10px;background:var(--inset);color:var(--text);font:inherit;font-size:14.5px;outline:none;transition:border-color .15s,box-shadow .15s}
+  .field input::placeholder{color:#5c636b}
+  .field input:focus{border-color:rgba(211,209,206,.42);box-shadow:0 0 0 3px rgba(211,209,206,.1)}
+
+  .chips{display:flex;gap:8px;flex-wrap:wrap;margin:2px 0 4px}
+  .chip{font-size:11.5px;color:var(--slopes);background:transparent;border:1px solid var(--edge);padding:6px 13px;border-radius:999px;font-weight:500}
+
+  .btn{display:block;width:100%;margin-top:20px;padding:14px;border:0;border-radius:11px;font:inherit;font-weight:600;font-size:15px;letter-spacing:.2px;color:var(--midnight);background:var(--arctic);cursor:pointer;transition:transform .08s ease,background .15s}
+  .btn:hover{background:#e6e4e0}
+  .btn:active{transform:translateY(1px)}
+  .btn.ghost{background:transparent;border:1px solid var(--edge2);color:var(--slopes)}
+  .btn.ghost:hover{background:rgba(211,209,206,.05);color:var(--text)}
+
+  .trust{display:flex;align-items:center;justify-content:center;gap:7px;color:var(--faint);font-size:11.5px;margin-top:16px}
   .trust svg{width:13px;height:13px}
-  .videowrap{position:relative;border-radius:14px;overflow:hidden;background:#000;aspect-ratio:4/3;border:1px solid var(--border)}
+  .note{text-align:center;color:var(--faint);font-size:11px;margin-top:14px;line-height:1.55}
+
+  .videowrap{position:relative;border-radius:14px;overflow:hidden;background:#000;aspect-ratio:4/3;border:1px solid var(--edge)}
   video{width:100%;height:100%;object-fit:cover;display:block;transform:scaleX(-1)}
-  .bar{position:absolute;top:0;left:0;right:0;padding:11px 15px;font-weight:700;font-size:13.5px;color:#fff;background:linear-gradient(180deg,rgba(7,11,18,.85),rgba(7,11,18,.4));backdrop-filter:blur(4px);display:flex;align-items:center;gap:9px}
-  .bar::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--warn);box-shadow:0 0 8px var(--warn);animation:bl 1.2s infinite}
-  @keyframes bl{50%{opacity:.35}}
-  .read{position:absolute;bottom:0;left:0;right:0;padding:10px 15px;font-size:12px;color:#cdd6e3;background:linear-gradient(0deg,rgba(7,11,18,.85),rgba(7,11,18,.3));backdrop-filter:blur(4px);font-variant-numeric:tabular-nums}
-  .steps{display:flex;gap:6px;margin:14px 0 2px}
-  .pstep{flex:1;text-align:center;font-size:10.5px;color:var(--faint);padding:8px 4px;border:1px solid var(--border);border-radius:9px}
-  .pstep.on{color:var(--brand2);border-color:rgba(231,226,206,.42);background:rgba(231,226,206,.07)}
-  .pstep.done{color:var(--ok);border-color:rgba(34,197,94,.35)}
-  .grid{display:grid;gap:10px;margin:8px auto;justify-content:center}
-  .tile{width:64px;height:64px;border-radius:12px;background:#0e1c45;border:1px solid var(--border);cursor:pointer;transition:.08s}
-  .tile.lit{background:var(--warn);border-color:var(--warn);box-shadow:0 0 18px rgba(194,168,120,.45)}
-  .tile.sel{background:var(--brand2);border-color:var(--brand2)}
-  .gmsg{text-align:center;font-size:15px;font-weight:700;margin:6px 0}
+  .bar{position:absolute;top:0;left:0;right:0;padding:12px 15px;font-weight:600;font-size:13px;color:var(--arctic);background:linear-gradient(180deg,rgba(9,15,21,.92),transparent);display:flex;align-items:center;gap:9px;letter-spacing:.2px}
+  .bar::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--arctic);box-shadow:0 0 10px rgba(211,209,206,.8);animation:bl 1.3s infinite}
+  @keyframes bl{50%{opacity:.3}}
+  .read{position:absolute;bottom:0;left:0;right:0;padding:11px 15px;font-size:12px;color:var(--slopes);background:linear-gradient(0deg,rgba(9,15,21,.92),transparent);font-variant-numeric:tabular-nums}
+
+  .steps{display:flex;gap:7px;margin:16px 0 2px}
+  .pstep{flex:1;text-align:center;font-size:11px;color:var(--faint);padding:9px 4px;border:1px solid var(--edge);border-radius:9px;letter-spacing:.3px;transition:.2s}
+  .pstep.on{color:var(--arctic);border-color:rgba(211,209,206,.35);background:rgba(211,209,206,.05)}
+  .pstep.done{color:var(--slopes);border-color:var(--edge2)}
+
+  .grid{display:grid;gap:10px;margin:10px auto;justify-content:center}
+  .tile{width:62px;height:62px;border-radius:12px;background:var(--mountain);border:1px solid var(--edge);cursor:pointer;transition:.1s}
+  .tile.lit{background:var(--arctic);border-color:var(--arctic);box-shadow:0 0 20px rgba(211,209,206,.35)}
+  .tile.sel{background:var(--apres);border-color:var(--slopes)}
+  .gmsg{text-align:center;font-size:15px;font-weight:600;margin:8px 0 2px;color:var(--text)}
   .gsub{text-align:center;font-size:12px;color:var(--muted);margin-bottom:8px;min-height:16px}
-  .big{text-align:center;font-size:62px;font-weight:800;letter-spacing:4px;margin:16px 0;color:var(--brand2);min-height:70px}
-  .pad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;max-width:220px;margin:10px auto}
-  .key{padding:15px 0;text-align:center;font-size:19px;font-weight:700;background:#0e1c45;border:1px solid var(--border);border-radius:10px;cursor:pointer}
-  .key:hover{border-color:var(--brand)}
-  .dot{width:58px;height:58px;border-radius:50%;background:var(--ok);margin:8px auto;cursor:pointer;box-shadow:0 0 26px rgba(34,197,94,.55)}
-  .badge{width:62px;height:62px;border-radius:50%;margin:2px auto 14px;display:flex;align-items:center;justify-content:center}
-  .badge.ok{background:rgba(34,197,94,.13);border:1px solid rgba(34,197,94,.45)}
-  .badge.bad{background:rgba(239,68,68,.13);border:1px solid rgba(239,68,68,.45)}
-  .verdict{text-align:center;font-size:21px;font-weight:800}
+  .big{font-family:var(--serif);text-align:center;font-size:60px;font-weight:500;letter-spacing:2px;margin:14px 0;color:var(--arctic);min-height:72px}
+  .pad{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;max-width:230px;margin:12px auto}
+  .key{padding:16px 0;text-align:center;font-size:19px;font-weight:600;background:var(--mountain);border:1px solid var(--edge);border-radius:11px;cursor:pointer;color:var(--text);transition:.1s}
+  .key:hover{border-color:rgba(211,209,206,.4)}
+  .dot{width:58px;height:58px;border-radius:50%;background:var(--arctic);margin:8px auto;cursor:pointer;box-shadow:0 0 28px rgba(211,209,206,.5)}
+
+  .badge{width:60px;height:60px;border-radius:50%;margin:4px auto 16px;display:flex;align-items:center;justify-content:center}
+  .badge.ok{background:rgba(116,190,156,.12);border:1px solid rgba(116,190,156,.42)}
+  .badge.bad{background:rgba(221,133,133,.12);border:1px solid rgba(221,133,133,.42)}
+  .verdict{font-family:var(--serif);text-align:center;font-size:29px;font-weight:500;letter-spacing:-.2px}
   .verdict.ok{color:var(--ok)}.verdict.bad{color:var(--bad)}
-  .vsub{text-align:center;color:var(--muted);font-size:12.5px;margin:4px 0 14px;line-height:1.5}
-  .find{display:flex;align-items:center;gap:12px;padding:12px 2px;border-bottom:1px solid var(--hair)}
-  .find .fi{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex:none;border:1px solid var(--border)}
-  .find .fk{font-size:13px;font-weight:700} .find .fv{font-size:11.5px;color:var(--muted);margin-top:1px}
-  .find .tagv{margin-left:auto;font-size:11px;font-weight:700;padding:4px 9px;border-radius:6px}
-  .tagv.ok{color:var(--ok);background:rgba(34,197,94,.12)} .tagv.bad{color:var(--bad);background:rgba(239,68,68,.12)}
-  .pred{background:var(--panel2);border:1px solid var(--border);border-radius:12px;padding:13px 15px;margin-top:14px;font-size:12.5px;color:#cdd6e3;line-height:1.55}
-  .pred b{color:var(--text)}
-  .note{text-align:center;color:var(--faint);font-size:11px;margin-top:14px;line-height:1.5}
+  .vsub{text-align:center;color:var(--muted);font-size:12.5px;margin:5px 0 16px;line-height:1.5}
+  .find{display:flex;align-items:center;gap:12px;padding:13px 2px;border-bottom:1px solid var(--edge)}
+  .find .fi{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex:none;border:1px solid var(--edge)}
+  .find .fk{font-size:13px;font-weight:600;color:var(--text)} .find .fv{font-size:11.5px;color:var(--muted);margin-top:1px}
+  .find .tagv{margin-left:auto;font-size:11px;font-weight:600;padding:4px 10px;border-radius:999px}
+  .tagv.ok{color:var(--ok);background:rgba(116,190,156,.12)} .tagv.bad{color:var(--bad);background:rgba(221,133,133,.12)}
+  .pred{background:var(--panel2);border:1px solid var(--edge);border-radius:12px;padding:13px 15px;margin-top:14px;font-size:12.5px;color:var(--slopes);line-height:1.6}
+  .pred b{color:var(--text);font-weight:600}
 </style></head>
 <body>
 <div class="app">
   <div class="topbar">
     <div class="brand">
-      <svg viewBox="0 0 24 24" fill="none"><path d="M12 2.5l7 2.6v5.2c0 4.3-2.9 8.3-7 9.7-4.1-1.4-7-5.4-7-9.7V5.1l7-2.6z" fill="rgba(59,80,125,.28)" stroke="#8fa4d4" stroke-width="1.5" stroke-linejoin="round"/><path d="M9 12l2.2 2.2L15.5 10" stroke="#e7e2ce" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <svg viewBox="0 0 24 24" fill="none"><path d="M12 2.5l7 2.6v5.2c0 4.3-2.9 8.3-7 9.7-4.1-1.4-7-5.4-7-9.7V5.1l7-2.6z" fill="rgba(211,209,206,.12)" stroke="#9aa0a6" stroke-width="1.5" stroke-linejoin="round"/><path d="M9 12l2.2 2.2L15.5 10" stroke="#D3D1CE" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
       <span class="nm">Drivora</span>
     </div>
     <div class="status"><span class="d"></span>Model loaded</div>
@@ -88,17 +110,17 @@
   <!-- HOME -->
   <div id="home">
     <div class="hero"><h1>Driver fitness check</h1>
-      <p>A camera scan runs your trained model for alcohol, plus pupil and fatigue checks, then a matching task confirms your level.</p></div>
+      <p>Your camera runs a quick impairment screen — alcohol, drugs and fatigue — then a short task confirms the result.</p></div>
     <div class="card">
       <div class="field"><span class="flabel">Name</span><input id="name" placeholder="Enter your name"></div>
       <div class="field"><span class="flabel">Email</span><input id="email" type="email" placeholder="you@example.com"></div>
-      <div class="chips"><span class="chip">Alcohol (model)</span><span class="chip">Drug category</span><span class="chip">Fatigue</span></div>
-      <button id="startBtn" class="btn">Start</button>
+      <div class="chips"><span class="chip">Alcohol</span><span class="chip">Drugs</span><span class="chip">Fatigue</span></div>
+      <button id="startBtn" class="btn">Begin check</button>
       <div class="trust">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
-        Processed entirely on your device — no video is uploaded.
+        Everything runs on your device. No video is uploaded.
       </div>
-      <div class="note" style="margin-top:12px">Awareness demo &amp; screening tool — not a certified sobriety or drug test. Results should not be used to decide whether someone drives.</div>
+      <div class="note" style="margin-top:12px">An awareness demo, not a certified sobriety or drug test. Don’t use the result to decide whether someone drives.</div>
     </div>
   </div>
 
@@ -111,9 +133,9 @@
       <div id="read" class="read"></div>
     </div>
     <div id="stepsbox" class="steps hid">
-      <div class="pstep" id="s1">1 · Camera scan</div>
-      <div class="pstep" id="s2">2 · Task</div>
-      <div class="pstep" id="s3">3 · Result</div>
+      <div class="pstep" id="s1">Scan</div>
+      <div class="pstep" id="s2">Task</div>
+      <div class="pstep" id="s3">Result</div>
     </div>
     <div id="gamebox" class="hid"></div>
     <div id="resultbox" class="hid"></div>
@@ -293,7 +315,7 @@ function cameraPhase(){
 }
 
 // ===== scan report + branch (matches runner.py / driveguard_full.py) =====
-function rowLine(k,sub,bad){return `<div class="find"><div class="fi" style="border-color:${bad?'rgba(239,68,68,.4)':'rgba(34,197,94,.35)'}">${bad?cross('#ef4444',16):check('#22c55e',16)}</div><div><div class="fk">${k}</div><div class="fv">${sub}</div></div><div class="tagv ${bad?'bad':'ok'}">${bad?'Flagged':'Clear'}</div></div>`;}
+function rowLine(k,sub,bad){return `<div class="find"><div class="fi" style="border-color:${bad?'rgba(221,133,133,.45)':'rgba(116,190,156,.4)'}">${bad?cross('#DD8585',16):check('#74BE9C',16)}</div><div><div class="fk">${k}</div><div class="fv">${sub}</div></div><div class="tagv ${bad?'bad':'ok'}">${bad?'Flagged':'Clear'}</div></div>`;}
 function scanRows(f){
   return rowLine('Alcohol', f.drunk?'Impairment signs (model)':'No alcohol signs', f.drunk)
        + rowLine('Drugs', f.drug_cat?(CATS[f.drug_cat].label+' signs in pupils'):'No drug signs', !!f.drug_cat)
@@ -311,7 +333,7 @@ function scanReport(f){
   const whatMsg = f.drunk ? "Alcohol impairment flagged by your trained model."
     : `${CATS[f.drug_cat].label} drug signs detected in your pupils.`;
   resultbox.innerHTML=`
-    <div class="badge bad">${cross('#ef4444',28)}</div>
+    <div class="badge bad">${cross('#DD8585',28)}</div>
     <div class="verdict bad">SIGNS DETECTED</div>
     <div class="vsub">Result for ${esc(person.name)}</div>
     ${scanRows(f)}
@@ -325,7 +347,7 @@ function scanReport(f){
 function finishClean(f){
   setStep(3); show(resultbox); backBtn.textContent="New check";
   resultbox.innerHTML=`
-    <div class="badge ok">${check('#22c55e',30)}</div>
+    <div class="badge ok">${check('#74BE9C',30)}</div>
     <div class="verdict ok">FIT TO DRIVE</div>
     <div class="vsub">Result for ${esc(person.name)}</div>
     ${scanRows(f)}
@@ -336,7 +358,7 @@ function finishClean(f){
 function showDrowsyOnly(f){
   setStep(3); show(resultbox); backBtn.textContent="New check";
   resultbox.innerHTML=`
-    <div class="badge bad">${cross('#ef4444',28)}</div>
+    <div class="badge bad">${cross('#DD8585',28)}</div>
     <div class="verdict bad">NOT FIT TO DRIVE</div>
     <div class="vsub">Result for ${esc(person.name)}</div>
     ${scanRows(f)}
@@ -353,7 +375,7 @@ function finishFlagged(f){
   const gameRow = f.game ? `<div class="pred"><b>${cap(f.game.header)} task.</b> Impairment level: ${f.game.level} &middot; ${f.game.detail}.</div>` : '';
   const possible = f.drug_cat ? `<div class="pred">Possible substances: ${CATS[f.drug_cat].possible}.</div>` : '';
   resultbox.innerHTML=`
-    <div class="badge bad">${cross('#ef4444',28)}</div>
+    <div class="badge bad">${cross('#DD8585',28)}</div>
     <div class="verdict bad">NOT FIT TO DRIVE</div>
     <div class="vsub">Result for ${esc(person.name)}</div>
     ${scanRows(f)}
